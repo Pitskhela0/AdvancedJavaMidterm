@@ -1,4 +1,4 @@
-package org.example;
+package org.example.piece_attributes;
 
 public class Position {
     private int x;
