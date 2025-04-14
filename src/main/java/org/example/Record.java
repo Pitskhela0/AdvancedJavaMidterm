@@ -17,4 +17,7 @@ public class Record {
     public List<Move> getMoves(){
         return this.moves;
     }
+    public Map<String,String> getTags(){
+        return tags;
+    }
 }
