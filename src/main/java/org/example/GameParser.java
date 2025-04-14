@@ -26,14 +26,6 @@ public class GameParser {
                     key.append(line.charAt(index));
                     index++;
                 }
-
-                int length = key.length();
-                int i = length-1;
-
-                while (line.charAt(i) == ' '){
-                    key.deleteCharAt(i);
-                    i--;
-                }
             }
             if(line.charAt(index) == '"'){
                 index++;
@@ -41,8 +33,6 @@ public class GameParser {
                     value.append(line.charAt(index));
                     index++;
                 }
-            }
-            if(line.charAt(index) == '"'){
                 break;
             }
             index++;
@@ -51,25 +41,36 @@ public class GameParser {
         return new String[]{key.toString(), value.toString()};
     }
 
+    private List<Move> getMovesFromString(String textMoves){
+        System.out.println(textMoves);
+        textMoves = textMoves.replace("\n"," ");
+        String[] moves = textMoves.split("\\.");
 
-    private List<Move> getMovesFromStringOfMoves(String textMoves){
+        // todo check every move
+
         return null;
     }
 
-    public List<Move> parsingMoves(String filePath){
+    public List<Record> parsingMoves(String filePath){
+        List<Record> games = new ArrayList<>();
+
         try(BufferedReader reader = new BufferedReader(new FileReader(filePath))){
             String line;
-
-            List<Record> games = new ArrayList<>();
+            String lastLine = null;
 
             Map<String, String> tags = new HashMap<>();
             StringBuilder moves = new StringBuilder();
 
-            boolean newGame = true;
-
             while((line = reader.readLine()) != null){
                 if(!line.isEmpty()){
                     if(line.charAt(0) == '['){
+                        if(lastLine != null && lastLine.charAt(0) != '['){
+                            List<Move> moveList = getMovesFromString(moves.toString());
+                            Map<String, String> tag = new HashMap<>(tags);
+                            games.add(new Record(tag,moveList));
+                            tags = new HashMap<>();
+                            moves = new StringBuilder();
+                        }
                         String[] tag = readLine(line);
                         if(tag != null){
                             tags.put(tag[0],tag[1]);
@@ -78,23 +79,25 @@ public class GameParser {
                     else {
                         moves.append(line);
                     }
+                    lastLine = line;
                 }
-
-                Thread.sleep(500);
             }
+            List<Move> moveList = getMovesFromString(moves.toString());
+            Map<String, String> tag = new HashMap<>(tags);
+            games.add(new Record(tag,moveList));
+
         }
-        catch (IOException | InterruptedException e){
+        catch (IOException e){
             System.out.println("Error during reading file");
         }
-        return null;
+        return games;
     }
 
     public static void main(String[] args) {
         GameParser g = new GameParser();
-        g.readLine("[yoyoyo             \"ha\"]");
+        String filePath = "C:\\autocode-demo\\ChessGame\\src\\main\\java\\org\\example\\Tbilisi2015.pgn";
+        g.parsingMoves(filePath).forEach((element)->{
+            System.out.println(element.getTags());
+        });
     }
-
-//    private boolean isValid(String move){
-//
-//    }
 }
