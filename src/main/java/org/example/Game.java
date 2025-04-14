@@ -19,6 +19,7 @@ public class Game {
             }
             else{
                 System.out.println("wrong move, game simulation is over");
+                break;
             }
         }
     }
