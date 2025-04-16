@@ -19,20 +19,38 @@ public class Move {
     private boolean checkmate;
     private final String annotation;
     private boolean promotion;
+    private boolean kingSideCastling;
+    private boolean queenSideCastling;
 
-    public Move(String action,String comment, String annotation, Color color){
+    public boolean isKingSideCastling() {
+        return kingSideCastling;
+    }
+
+    public boolean isQueenSideCastling() {
+        return queenSideCastling;
+    }
+
+    public Move(String action, String comment, String annotation, Color color){
         this.action = action;
         this.comment = comment;
         this.annotation = annotation;
-
-        System.out.println(action);
-
         // checkmate
         if(action.contains("#"))
             this.checkmate = true;
         // check
         else if(action.contains("+"))
             this.check = true;
+
+        if(action.equals("O-O")){
+            kingSideCastling = true;
+            return;
+        }
+        if(action.equals("O-O-O")){
+            queenSideCastling = true;
+            return;
+        }
+
+        System.out.println(action);
 
 
         char firstChar = action.charAt(0);
