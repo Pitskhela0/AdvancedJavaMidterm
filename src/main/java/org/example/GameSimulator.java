@@ -22,5 +22,6 @@ public class Game {
                 break;
             }
         }
+        System.out.println("Game completed successfully");
     }
 }
