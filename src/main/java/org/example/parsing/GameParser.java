@@ -1,6 +1,6 @@
 package org.example;
 
-import org.example.piece_attributes.Color;
+import org.example.pieces.attributes.Color;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -122,7 +122,7 @@ public class GameParser {
 
                 whiteMove = generateMove(white,Color.white);
 
-                System.out.println(whiteMove.toString());
+//                System.out.println(whiteMove.toString());
 //
 //
 //                System.out.println(whiteMove.getAction());
@@ -185,7 +185,7 @@ public class GameParser {
 
                 blackMove = generateMove(black,Color.black);
 
-                System.out.println(blackMove.toString());
+//                System.out.println(blackMove.toString());
 
                 result.get(currentRound)[1] = blackMove;
 
@@ -218,6 +218,7 @@ public class GameParser {
 
             previousLevel = currentRound;
         }
+
         if(winner != null){
             System.out.println("Successful game");
             System.out.println(winner);
@@ -254,7 +255,8 @@ public class GameParser {
                 action = element.trim();
             }
         }
-        return new Move(action, comment, annotation, color);
+        Move move = new Move(action, comment, annotation, color);
+        return move;
     }
 
     public List<Record> parsingMoves(String filePath){
@@ -267,13 +269,20 @@ public class GameParser {
             Map<String, String> tags = new HashMap<>();
             StringBuilder moves = new StringBuilder();
 
+
             while((line = reader.readLine()) != null){
+
                 if(!line.isEmpty()){
+
                     if(line.charAt(0) == '['){
+
                         if(lastLine != null && lastLine.charAt(0) != '['){
 
                             Map<String, String> tag = new HashMap<>(tags);
+
                             records.add(getMovesFromString(moves.toString(),tag));
+
+
                             tags = new HashMap<>();
                             moves = new StringBuilder();
                         }
@@ -288,12 +297,14 @@ public class GameParser {
                     lastLine = line;
                 }
             }
+
             Map<String, String> tag = new HashMap<>(tags);
             records.add(getMovesFromString(moves.toString(),tag));
         }
         catch (IOException e){
             System.out.println("Error during reading file");
         }
+
         return records;
     }
 

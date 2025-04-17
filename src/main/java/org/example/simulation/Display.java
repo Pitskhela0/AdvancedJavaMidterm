@@ -1,6 +1,6 @@
 package org.example;
 
-import org.example.piece_attributes.Color;
+import org.example.pieces.attributes.Color;
 import org.example.pieces.*;
 
 public class Display {
