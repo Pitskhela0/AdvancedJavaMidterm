@@ -25,6 +25,10 @@ public class Record {
         return moves;
     }
 
+    public String getResult() {
+        return result;
+    }
+
     public Map<Integer,Move[]> getRecord(){
         return this.moves;
     }
