@@ -1,6 +1,6 @@
-package org.example;
+package org.example.parsing;
 
-import org.example.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Color;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -77,7 +77,7 @@ public class GameParser {
     private final String resultRegex = "^(1-0|0-1|1/2-1/2|\\*)\\s*";
 
 
-    private Record getMovesFromString(String text,Map<String,String> tags) {
+    private Record getMovesFromString(String text, Map<String,String> tags) {
         Map<Integer, Move[]> result = new HashMap<>();
 
         text = text.replaceAll("\n"," ").replaceAll("\\s+", " ").trim();

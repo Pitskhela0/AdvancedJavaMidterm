@@ -1,14 +1,17 @@
-package org.example;
+package org.example.simulation;
 
-import org.example.pieces.attributes.Color;
-import org.example.pieces.attributes.Position;
-import org.example.pieces.*;
+import org.example.Main;
+import org.example.parsing.Record;
+import org.example.parsing.Move;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Position;
+import org.example.simulation.pieces.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.example.pieces.attributes.Color.black;
-import static org.example.pieces.attributes.Color.white;
+import static org.example.simulation.pieces.attributes.Color.black;
+import static org.example.simulation.pieces.attributes.Color.white;
 
 public class GameSimulator {
     private Piece[][] board;
@@ -148,7 +151,6 @@ public class GameSimulator {
                     System.out.println("Error: Wrong file ambiguity");
                     return;
                 }
-            System.out.println("so good");
 
             // check for rank ambiguity
             if(!(currentPiece instanceof  Pawn))
@@ -156,7 +158,6 @@ public class GameSimulator {
                     System.out.println("Error: Wrong rank ambiguity");
                     return;
                 }
-            System.out.println("so good");
 
 
             // Handle promotion
@@ -182,8 +183,6 @@ public class GameSimulator {
                 return;
             }
 
-
-            System.out.println("checkmate status on board "+isCheckmate(opponentKing));
             if(count == moves.size())
                 if (move.isCheckmate() != isCheckmate(opponentKing)) {
                     System.out.println("Error: Checkmate status mismatch");
@@ -191,9 +190,16 @@ public class GameSimulator {
                 }
 
             count++;
+            System.out.println(count);
+            System.out.println(moves.size());
             new Display().printBoard(board);
         }
+        System.out.println("Successful game");
     }
+
+    // todo checkmate checking at the end of the game
+    // if there is no move check board for checkmate
+    //
 
     private boolean handleKingSideCastling(Color color) {
         King king = (color == white) ? whiteKing : blackKing;
@@ -314,10 +320,7 @@ public class GameSimulator {
         Color color = move.getColor();
         Position targetPos = move.getNewPosition();
 
-/**
- * Update to the identifyPiece method in GameSimulator.java
- * Enhance the knight identification logic to better handle file disambiguation
- */
+
 
         // Special case for knight moves with file disambiguation (like "Nhf6")
         if (pieceType == 'N' && move.isCharAmb() && !move.isDigitAmb()) {

@@ -1,4 +1,4 @@
-package org.example.pieces.attributes;
+package org.example.simulation.pieces.attributes;
 
 import java.util.Objects;
 

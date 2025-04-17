@@ -1,8 +1,8 @@
-package org.example.pieces;
+package org.example.simulation.pieces;
 
-import org.example.Piece;
-import org.example.pieces.attributes.Color;
-import org.example.pieces.attributes.Position;
+import org.example.simulation.Piece;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Position;
 
 public class Queen extends Piece {
     public Queen(Color color) {
@@ -11,38 +11,6 @@ public class Queen extends Piece {
 
     public Queen(Position position, Color color) {
         super(position, color);
-    }
-
-    @Override
-    public boolean isFileAmigue(Piece[][] board) {
-        // Check if there's another queen of the same color that could move to the same file
-        int count = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board[i][j] instanceof Queen &&
-                        board[i][j].getColor() == this.getColor() &&
-                        !board[i][j].equals(this)) {
-                    count++;
-                }
-            }
-        }
-        return count > 0;
-    }
-
-    @Override
-    public boolean isRankAmigue(Piece[][] board) {
-        // Check if there's another queen of the same color that could move to the same rank
-        int count = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board[i][j] instanceof Queen &&
-                        board[i][j].getColor() == this.getColor() &&
-                        !board[i][j].equals(this)) {
-                    count++;
-                }
-            }
-        }
-        return count > 0;
     }
 
     @Override

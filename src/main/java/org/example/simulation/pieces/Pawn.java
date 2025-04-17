@@ -1,11 +1,11 @@
-package org.example.pieces;
+package org.example.simulation.pieces;
 
-import org.example.Piece;
-import org.example.pieces.attributes.Color;
-import org.example.pieces.attributes.Position;
+import org.example.simulation.Piece;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Position;
 
-import static org.example.pieces.attributes.Color.black;
-import static org.example.pieces.attributes.Color.white;
+import static org.example.simulation.pieces.attributes.Color.black;
+import static org.example.simulation.pieces.attributes.Color.white;
 
 public class Pawn extends Piece {
     public Pawn(Color color) {
@@ -16,39 +16,6 @@ public class Pawn extends Piece {
         super(position, color);
     }
 
-    @Override
-    public boolean isFileAmigue(Piece[][] board) {
-        // For pawns, check if another pawn of the same color is on the same file
-        char file = (char)('a' + getPosition().getY());
-        int count = 0;
-
-        for (int i = 0; i < 8; i++) {
-            if (board[i][getPosition().getY()] instanceof Pawn &&
-                    board[i][getPosition().getY()].getColor() == this.getColor() &&
-                    !board[i][getPosition().getY()].equals(this)) {
-                count++;
-            }
-        }
-
-        return count > 0;
-    }
-
-    @Override
-    public boolean isRankAmigue(Piece[][] board) {
-        // For pawns, check if another pawn of the same color is on the same rank
-        int rank = getPosition().getX();
-        int count = 0;
-
-        for (int j = 0; j < 8; j++) {
-            if (board[rank][j] instanceof Pawn &&
-                    board[rank][j].getColor() == this.getColor() &&
-                    !board[rank][j].equals(this)) {
-                count++;
-            }
-        }
-
-        return count > 0;
-    }
 
     @Override
     public boolean canGo(Position newPosition) {

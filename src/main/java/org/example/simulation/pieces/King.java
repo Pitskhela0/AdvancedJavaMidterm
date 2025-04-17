@@ -1,8 +1,8 @@
-package org.example.pieces;
+package org.example.simulation.pieces;
 
-import org.example.Piece;
-import org.example.pieces.attributes.Color;
-import org.example.pieces.attributes.Position;
+import org.example.simulation.Piece;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Position;
 
 public class King extends Piece {
     private boolean hasMoved = false;
@@ -13,18 +13,6 @@ public class King extends Piece {
 
     public King(Position position, Color color) {
         super(position, color);
-    }
-
-    @Override
-    public boolean isFileAmigue(Piece[][] board) {
-        // There can only be one king of each color, so no ambiguity
-        return false;
-    }
-
-    @Override
-    public boolean isRankAmigue(Piece[][] board) {
-        // There can only be one king of each color, so no ambiguity
-        return false;
     }
 
     @Override

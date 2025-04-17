@@ -1,8 +1,8 @@
-package org.example.pieces;
+package org.example.simulation.pieces;
 
-import org.example.Piece;
-import org.example.pieces.attributes.Color;
-import org.example.pieces.attributes.Position;
+import org.example.simulation.Piece;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Position;
 
 public class Rook extends Piece {
     public Rook(Color color) {
@@ -11,35 +11,6 @@ public class Rook extends Piece {
 
     public Rook(Position position, Color color) {
         super(position, color);
-    }
-
-    @Override
-    public boolean isFileAmigue(Piece[][] board) {
-        // Check if there's another rook of same color on the same file
-        int count = 0;
-        for (int i = 0; i < 8; i++) {
-            if (board[i][getPosition().getY()] instanceof Rook &&
-                    board[i][getPosition().getY()].getColor() == this.getColor() &&
-                    !board[i][getPosition().getY()].equals(this)) {
-                count++;
-            }
-        }
-        return count > 0;
-    }
-
-    @Override
-    public boolean isRankAmigue(Piece[][] board) {
-        // Check if there's another rook of same color on the same rank
-        int count = 0;
-        for (int j = 0; j < 8; j++) {
-            if (board[getPosition().getX()][j] instanceof Rook &&
-                    board[getPosition().getX()][j].getColor() == this.getColor() &&
-                    !board[getPosition().getX()][j].equals(this)) {
-                count++;
-            }
-        }
-        System.out.println(count);
-        return count > 0;
     }
 
     @Override

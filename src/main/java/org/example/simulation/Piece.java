@@ -1,10 +1,13 @@
-package org.example;
+package org.example.simulation;
 
-import org.example.pieces.Knight;
-import org.example.pieces.Pawn;
-import org.example.pieces.attributes.Color;
-import org.example.pieces.attributes.Position;
+import org.example.simulation.pieces.Knight;
+import org.example.simulation.pieces.Pawn;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Position;
+import org.example.simulation.pieces.King;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class Piece {
@@ -33,24 +36,6 @@ public abstract class Piece {
     }
 
     /**
-     * Checks if there are other pieces of the same type and color that could move to the same file,
-     * requiring file disambiguation in algebraic notation.
-     *
-     * @param board The current chess board
-     * @return true if file disambiguation is needed
-     */
-    public abstract boolean isFileAmigue(Piece[][] board);
-
-    /**
-     * Checks if there are other pieces of the same type and color that could move to the same rank,
-     * requiring rank disambiguation in algebraic notation.
-     *
-     * @param board The current chess board
-     * @return true if rank disambiguation is needed
-     */
-    public abstract boolean isRankAmigue(Piece[][] board);
-
-    /**
      * Checks if this piece is putting the opponent's king in check
      *
      * @param board The current chess board
@@ -61,7 +46,7 @@ public abstract class Piece {
         Position kingPosition = null;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if (board[i][j] instanceof org.example.pieces.King &&
+                if (board[i][j] instanceof King &&
                         board[i][j].getColor() != this.getColor()) {
                     kingPosition = board[i][j].getPosition();
                     break;
@@ -80,7 +65,7 @@ public abstract class Piece {
         }
 
         // Check if path to king is clear (for non-Knight pieces)
-        if (!(this instanceof org.example.pieces.Knight)) {
+        if (!(this instanceof Knight)) {
             int startX = position.getX();
             int startY = position.getY();
             int kingX = kingPosition.getX();
@@ -198,20 +183,13 @@ public abstract class Piece {
      * @return true if rank disambiguation is needed
      */
     public boolean needsRankDisambiguation(Piece[][] board, Position newPosition) {
-        // For knight moves with file disambiguation (like "Nbd7"), we don't need rank disambiguation
-        if (this instanceof Knight && isCharAmb(board, newPosition)) {
+        // Special case for pawns - they never need rank disambiguation
+        if (this instanceof Pawn) {
             return false;
         }
 
-        // For regular pawn moves, never needs rank disambiguation
-        if (this instanceof Pawn && getPosition().getY() == newPosition.getY()) {
-            return false;
-        }
-
-        // Count pieces of the same type and color that could move to target position
-        int ambiguousPieces = 0;
-        boolean differentRank = false;
-        boolean sameFile = false;
+        // Collect all pieces of the same type and color that can move to the target position
+        List<Piece> candidates = new ArrayList<>();
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -219,29 +197,45 @@ public abstract class Piece {
                 if (piece != null &&
                         piece.getClass().equals(this.getClass()) &&
                         piece.getColor() == this.getColor() &&
-                        !piece.equals(this)) {
+                        !piece.equals(this) &&
+                        piece.canGo(newPosition) &&
+                        isPathClear(board, piece.getPosition(), newPosition)) {
 
-                    // Check if this other piece can also move to the target position
-                    if (piece.canGo(newPosition) && isPathClear(board, piece.getPosition(), newPosition)) {
-                        ambiguousPieces++;
-
-                        // Check if the pieces are on different ranks
-                        if (piece.getPosition().getX() != this.getPosition().getX()) {
-                            differentRank = true;
-                        }
-
-                        // Check if they're on the same file
-                        if (piece.getPosition().getY() == this.getPosition().getY()) {
-                            sameFile = true;
-                        }
-                    }
+                    candidates.add(piece);
                 }
             }
         }
 
-        // Rank disambiguation is needed when we have ambiguous pieces on different ranks
-        // AND they're not already disambiguated by file
-        return ambiguousPieces > 0 && differentRank && !sameFile;
+        // If there are no other pieces that can make this move, no disambiguation is needed
+        if (candidates.isEmpty()) {
+            return false;
+        }
+
+        // Check if any candidate piece is on a different rank
+        boolean differentRank = false;
+        for (Piece candidate : candidates) {
+            if (candidate.getPosition().getRank() != this.getPosition().getRank()) {
+                differentRank = true;
+                break;
+            }
+        }
+
+        // If no pieces on different ranks, no rank disambiguation needed
+        if (!differentRank) {
+            return false;
+        }
+
+        // Check if file disambiguation would be enough
+        boolean sameFile = false;
+        for (Piece candidate : candidates) {
+            if (candidate.getPosition().getFile() == this.getPosition().getFile()) {
+                sameFile = true;
+                break;
+            }
+        }
+
+        // If there's a piece on the same file, we need rank disambiguation too
+        return sameFile;
     }
     /**
      * Helper method to check if file disambiguation is needed

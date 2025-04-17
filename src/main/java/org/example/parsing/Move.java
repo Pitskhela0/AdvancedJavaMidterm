@@ -1,7 +1,7 @@
-package org.example;
+package org.example.parsing;
 
-import org.example.pieces.attributes.Color;
-import org.example.pieces.attributes.Position;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Position;
 
 public class Move {
     private char piece;

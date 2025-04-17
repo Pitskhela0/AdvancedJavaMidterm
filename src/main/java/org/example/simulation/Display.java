@@ -1,7 +1,7 @@
-package org.example;
+package org.example.simulation;
 
-import org.example.pieces.attributes.Color;
-import org.example.pieces.*;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.*;
 
 public class Display {
     /**

@@ -1,8 +1,8 @@
-package org.example.pieces;
+package org.example.simulation.pieces;
 
-import org.example.Piece;
-import org.example.pieces.attributes.Color;
-import org.example.pieces.attributes.Position;
+import org.example.simulation.Piece;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Position;
 
 public class Bishop extends Piece {
     public Bishop(Color color) {
@@ -11,48 +11,6 @@ public class Bishop extends Piece {
 
     public Bishop(Position position, Color color) {
         super(position, color);
-    }
-
-    @Override
-    public boolean isFileAmigue(Piece[][] board) {
-        // Count bishops of same color that can move to the same file
-        int count = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board[i][j] instanceof Bishop &&
-                        board[i][j].getColor() == this.getColor() &&
-                        !board[i][j].equals(this)) {
-
-                    // Check if this bishop could move to same files
-                    Bishop other = (Bishop) board[i][j];
-                    if (canMoveToDiagonals(other.getPosition(), this.getPosition())) {
-                        count++;
-                    }
-                }
-            }
-        }
-        return count > 0;
-    }
-
-    @Override
-    public boolean isRankAmigue(Piece[][] board) {
-        // Count bishops of same color that can move to the same rank
-        int count = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board[i][j] instanceof Bishop &&
-                        board[i][j].getColor() == this.getColor() &&
-                        !board[i][j].equals(this)) {
-
-                    // Check if this bishop could move to same ranks
-                    Bishop other = (Bishop) board[i][j];
-                    if (canMoveToDiagonals(other.getPosition(), this.getPosition())) {
-                        count++;
-                    }
-                }
-            }
-        }
-        return count > 0;
     }
 
     private boolean canMoveToDiagonals(Position from, Position to) {

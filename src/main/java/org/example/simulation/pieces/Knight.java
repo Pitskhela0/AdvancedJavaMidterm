@@ -1,8 +1,8 @@
-package org.example.pieces;
+package org.example.simulation.pieces;
 
-import org.example.Piece;
-import org.example.pieces.attributes.Color;
-import org.example.pieces.attributes.Position;
+import org.example.simulation.Piece;
+import org.example.simulation.pieces.attributes.Color;
+import org.example.simulation.pieces.attributes.Position;
 
 public class Knight extends Piece {
     public Knight(Color color) {
@@ -13,55 +13,6 @@ public class Knight extends Piece {
         super(position, color);
     }
 
-    @Override
-    public boolean isFileAmigue(Piece[][] board) {
-        // Check if there's another knight of the same color that could move to the same file
-        int count = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board[i][j] instanceof Knight &&
-                        board[i][j].getColor() == this.getColor() &&
-                        !board[i][j].equals(this)) {
-
-                    // Check if this knight could move to a position on the same file
-                    Knight other = (Knight) board[i][j];
-                    for (int x = 0; x < 8; x++) {
-                        Position potential = new Position((char)('a' + getPosition().getY()), x + 1);
-                        if (other.canGo(potential) && this.canGo(potential)) {
-                            count++;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return count > 0;
-    }
-
-    @Override
-    public boolean isRankAmigue(Piece[][] board) {
-        // Check if there's another knight of the same color that could move to the same rank
-        int count = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board[i][j] instanceof Knight &&
-                        board[i][j].getColor() == this.getColor() &&
-                        !board[i][j].equals(this)) {
-
-                    // Check if this knight could move to a position on the same rank
-                    Knight other = (Knight) board[i][j];
-                    for (int y = 0; y < 8; y++) {
-                        Position potential = new Position((char)('a' + y), getPosition().getX() + 1);
-                        if (other.canGo(potential) && this.canGo(potential)) {
-                            count++;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return count > 0;
-    }
 
     @Override
     public boolean canGo(Position newPosition) {
@@ -100,38 +51,4 @@ public class Knight extends Piece {
         // Check if knight can reach the king's position in one move
         return canGo(kingPosition);
     }
-    /**
-     * Update to the Knight class or Piece class to properly handle rank disambiguation for knights
-     */
-    @Override
-    public boolean needsRankDisambiguation(Piece[][] board, Position newPosition) {
-        // For knights, check if there's another knight on the same rank that could move to the target
-        int currentRank = getPosition().getX();
-        int ambiguousKnights = 0;
-
-        // Check all knights of the same color
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = board[i][j];
-                if (piece instanceof Knight &&
-                        piece.getColor() == this.getColor() &&
-                        !piece.equals(this) &&
-                        piece.canGo(newPosition) &&
-                        isPathClear(board, piece.getPosition(), newPosition)) {
-
-                    // If there's a knight on the same rank that can move to the target
-                    if (piece.getPosition().getX() == currentRank) {
-                        return true;
-                    }
-
-                    ambiguousKnights++;
-                }
-            }
-        }
-
-        // If there are multiple knights that can move to the target and file disambiguation
-        // wouldn't be enough, we need rank disambiguation
-        return ambiguousKnights > 0 && !needsFileDisambiguation(board, newPosition);
-    }
-
 }
