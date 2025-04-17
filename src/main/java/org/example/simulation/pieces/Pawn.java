@@ -16,7 +16,6 @@ public class Pawn extends Piece {
         super(position, color);
     }
 
-
     @Override
     public boolean canGo(Position newPosition) {
         int currentX = getPosition().getX();
@@ -45,7 +44,9 @@ public class Pawn extends Piece {
 
         // Diagonal capture
         if (xDiff == direction && yDiff == 1) {
-            // We'll check in GameSimulator if there's actually a piece to capture
+            // For checking if the pawn can go to a position (like a king's position for check),
+            // we need to ensure it's actually a capture move
+            // A pawn can only "go" to a diagonal position if it's capturing
             return true;
         }
 
@@ -103,6 +104,7 @@ public class Pawn extends Piece {
                     break;
                 }
             }
+            if (kingPosition != null) break;
         }
 
         if (kingPosition == null) {
@@ -118,6 +120,7 @@ public class Pawn extends Piece {
         int direction = (getColor() == white) ? 1 : -1;
 
         // Pawn can only check diagonally (capture move)
-        return kingX == currentX + direction && Math.abs(kingY - currentY) == 1;
+        // It must be exactly one square diagonally forward
+        return (kingX == currentX + direction) && (Math.abs(kingY - currentY) == 1);
     }
 }

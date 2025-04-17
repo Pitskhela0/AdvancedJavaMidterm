@@ -15,29 +15,23 @@ import static org.example.simulation.pieces.attributes.Color.white;
 
 public class GameSimulator {
     private Piece[][] board;
-
-    public Piece[][] getBoard() {
-        return board;
-    }
-
     private King whiteKing = new King(new Position('e',1), white);
     private King blackKing = new King(new Position('e',8), black);
-
-    public King getWhiteKing() {
-        return whiteKing;
-    }
-
-    public King getBlackKing() {
-        return blackKing;
-    }
-
     private final Record record;
 
+    public Piece[][] getBoard() { return board; }
+    public King getWhiteKing() { return whiteKing; }
+    public King getBlackKing() { return blackKing; }
+
     public GameSimulator(Record record) {
-        // Initialize the chess board with starting positions
+        this.record = record;
+        initializeBoard();
+    }
+
+    private void initializeBoard() {
         board = new Piece[8][8];
 
-        // Set up white pieces (bottom row in traditional chess notation)
+        // Set up white pieces
         board[0][0] = new Rook(new Position('a', 1), white);
         board[0][1] = new Knight(new Position('b', 1), white);
         board[0][2] = new Bishop(new Position('c', 1), white);
@@ -47,26 +41,24 @@ public class GameSimulator {
         board[0][6] = new Knight(new Position('g', 1), white);
         board[0][7] = new Rook(new Position('h', 1), white);
 
-        // Set up white pawns (second row)
+        // Set up white pawns
         for (int i = 0; i < 8; i++) {
-            char file = (char)('a' + i);
-            board[1][i] = new Pawn(new Position(file, 2), white);
+            board[1][i] = new Pawn(new Position((char)('a' + i), 2), white);
         }
 
-        // Set up empty middle of the board (rows 3-6)
+        // Empty middle of the board
         for (int row = 2; row < 6; row++) {
             for (int col = 0; col < 8; col++) {
                 board[row][col] = null;
             }
         }
 
-        // Set up black pawns (seventh row)
+        // Set up black pawns
         for (int i = 0; i < 8; i++) {
-            char file = (char)('a' + i);
-            board[6][i] = new Pawn(new Position(file, 7), black);
+            board[6][i] = new Pawn(new Position((char)('a' + i), 7), black);
         }
 
-        // Set up black pieces (top row)
+        // Set up black pieces
         board[7][0] = new Rook(new Position('a', 8), black);
         board[7][1] = new Knight(new Position('b', 8), black);
         board[7][2] = new Bishop(new Position('c', 8), black);
@@ -75,9 +67,6 @@ public class GameSimulator {
         board[7][5] = new Bishop(new Position('f', 8), black);
         board[7][6] = new Knight(new Position('g', 8), black);
         board[7][7] = new Rook(new Position('h', 8), black);
-
-        // Store the game record
-        this.record = record;
     }
 
     public void runGame() {
@@ -86,127 +75,175 @@ public class GameSimulator {
             return;
         }
 
-        System.out.println(record.getTags());
         List<Move> moves = record.getMoves();
-
         if (moves == null || moves.isEmpty()) {
             System.out.println("No moves to simulate");
             return;
         }
 
-        System.out.println("Starting game simulation with " + moves.size() + " moves");
-
         int count = 1;
         for (Move move : moves) {
-            // no move left, meaning game ended
-            if(move == null){
-                Main.countMoves += 1;
-                System.out.println("Game ended successfully");
-                return;
+            if (move == null) break;
+
+            // Process each move
+            if (!processMove(move)) {
+                return; // Error encountered
             }
-            System.out.println("Processing move: " + move.getAction() + " by " + move.getColor());
-
-            // Handle castling
-            if (move.isKingSideCastling()) {
-                if (!handleKingSideCastling(move.getColor())) {
-                    System.out.println("Error: Invalid king-side castling");
-                    return;
-                }
-                continue;
-            }
-
-            if (move.isQueenSideCastling()) {
-                if (!handleQueenSideCastling(move.getColor())) {
-                    System.out.println("Error: Invalid queen-side castling");
-                    return;
-                }
-                continue;
-            }
-
-            // Identify which piece to move
-            Piece currentPiece = identifyPiece(move);
-
-            if (currentPiece == null) {
-                System.out.println("Error: Cannot identify piece for move " + move.getAction());
-                return;
-            }
-
-            System.out.println("Identified piece: " + currentPiece.getClass().getSimpleName() +
-                    " at " + currentPiece.getPosition());
-
-            // Validate the move
-            Position newPosition = move.getNewPosition();
-
-            // Check for capture
-            if (move.isCapture() == (board[newPosition.getX()][newPosition.getY()] == null)) {
-                System.out.println("Error: Capture status mismatch");
-                return;
-            }
-
-            System.out.println(currentPiece.getClass().toString());
-
-            // Check for file/rank ambiguity
-            if(!(currentPiece instanceof Pawn))
-                if (currentPiece.needsFileDisambiguation(board, move.getNewPosition()) != move.isCharAmb()) {
-                    System.out.println("Error: Wrong file ambiguity");
-                    return;
-                }
-
-            // check for rank ambiguity
-            if(!(currentPiece instanceof  Pawn))
-                if (currentPiece.needsRankDisambiguation(board, move.getNewPosition()) != move.isDigitAmb()) {
-                    System.out.println("Error: Wrong rank ambiguity");
-                    return;
-                }
-
-
-            // Handle promotion
-            if (move.isPromotion()) {
-                Piece promotedPiece = getPiece(move.getPromoted(), currentPiece.getPosition(), currentPiece.getColor());
-                if (promotedPiece == null) {
-                    System.out.println("Error: Invalid promotion piece");
-                    return;
-                }
-
-                // Move the promoted piece
-                movePiece(promotedPiece, board, newPosition);
-                System.out.println("Promoted pawn to " + promotedPiece.getClass().getSimpleName());
-            } else {
-                // Move the piece
-                movePiece(currentPiece, board, newPosition);
-            }
-
-            // Verify check and checkmate
-            King opponentKing = (move.getColor() == white) ? blackKing : whiteKing;
-            if (move.isCheck() != isInCheck(opponentKing)) {
-                System.out.println("Error: Check status mismatch");
-                return;
-            }
-
-            if(count == moves.size())
-                if (move.isCheckmate() != isCheckmate(opponentKing)) {
-                    System.out.println("Error: Checkmate status mismatch");
-                    return;
-                }
 
             count++;
-            System.out.println(count);
-            System.out.println(moves.size());
-            new Display().printBoard(board);
+            Main.countMoves++;
         }
-        System.out.println("Successful game");
+
+        // Game completed successfully
+        analyzeGameResult(count-1, moves.size());
     }
 
-    // todo checkmate checking at the end of the game
-    // if there is no move check board for checkmate
-    //
+    private boolean processMove(Move move) {
+        // Handle castling
+        if (move.isKingSideCastling()) {
+            return handleKingSideCastling(move.getColor());
+        }
+
+        if (move.isQueenSideCastling()) {
+            return handleQueenSideCastling(move.getColor());
+        }
+
+        // Regular move
+        Piece currentPiece = identifyPiece(move);
+        if (currentPiece == null) {
+            System.out.println("Error: Cannot identify piece for move " + move.getAction());
+            return false;
+        }
+
+        // Validate move
+        Position newPosition = move.getNewPosition();
+        if (!validateMove(move, currentPiece, newPosition)) {
+            return false;
+        }
+
+        // Execute move
+        if (move.isPromotion()) {
+            executePromotion(move, currentPiece, newPosition);
+        } else {
+            ChessUtils.movePiece(board, currentPiece, newPosition);
+        }
+
+        // Verify check status
+        King opponentKing = (move.getColor() == white) ? blackKing : whiteKing;
+        boolean actualCheckStatus = ChessUtils.isInCheck(board, opponentKing);
+
+        if (move.isCheck() != actualCheckStatus) {
+            System.out.println("Error: Check status mismatch for move " + move.getAction());
+            return false;
+        }
+
+        // Verify checkmate if claimed
+        if (move.isCheckmate() && !ChessUtils.isCheckmate(board, opponentKing)) {
+            System.out.println("Error: Checkmate status mismatch for move " + move.getAction());
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean validateMove(Move move, Piece piece, Position newPosition) {
+        // Check for capture
+        if (move.isCapture() == (board[newPosition.getX()][newPosition.getY()] == null)) {
+            System.out.println("Error: Capture status mismatch for move " + move.getAction());
+            return false;
+        }
+
+        // Check for file/rank ambiguity (skip for pawns)
+        if (!(piece instanceof Pawn)) {
+            if (piece.needsFileDisambiguation(board, newPosition) != move.isCharAmb()) {
+                System.out.println("Error: Wrong file ambiguity");
+                return false;
+            }
+
+            if (piece.needsRankDisambiguation(board, newPosition) != move.isDigitAmb()) {
+                System.out.println("Error: Wrong rank ambiguity");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void executePromotion(Move move, Piece pawn, Position newPosition) {
+        Piece promotedPiece = ChessUtils.createPiece(move.getPromoted(), pawn.getPosition(), pawn.getColor());
+        if (promotedPiece == null) {
+            System.out.println("Error: Invalid promotion piece");
+            return;
+        }
+
+        ChessUtils.movePiece(board, promotedPiece, newPosition);
+        System.out.println("Promoted pawn to " + promotedPiece.getClass().getSimpleName());
+    }
+
+    private void analyzeGameResult(int movesCompleted, int totalMoves) {
+        System.out.println("Successfully completed " + movesCompleted + " moves");
+
+        // Determine the final game state
+        Color lastMoveColor = (movesCompleted % 2 == 0) ? black : white;
+        Color nextToMove = (lastMoveColor == white) ? black : white;
+        King kingToCheck = (nextToMove == white) ? whiteKing : blackKing;
+
+        // Display final board state
+        System.out.println("Final board state:");
+        new Display().printBoard(board);
+
+        // Optional: Enable for detailed debugging
+        // ChessUtils.debugCheckmate(board, kingToCheck);
+
+        boolean isCheck = ChessUtils.isInCheck(board, kingToCheck);
+        boolean isCheckmate = ChessUtils.isCheckmate(board, kingToCheck);
+        String pgnResult = record.getResult();
+
+        // Report final result
+        if (isCheckmate) {
+            System.out.println("Game ended in checkmate. " + lastMoveColor + " wins!");
+            verifyResult(lastMoveColor, pgnResult);
+        } else if (isCheck) {
+            System.out.println("King is in check but not checkmate.");
+            if ("white".equals(pgnResult) || "black".equals(pgnResult)) {
+                System.out.println("Warning: Game ended without checkmate but PGN indicates a winner.");
+            }
+        } else {
+            reportNonCheckmateEnding(pgnResult);
+        }
+    }
+
+    private void verifyResult(Color winner, String pgnResult) {
+        boolean resultsMatch =
+                (winner == white && "white".equals(pgnResult)) ||
+                        (winner == black && "black".equals(pgnResult));
+
+        if (!resultsMatch) {
+            System.out.println("Warning: Checkmate detection shows " + winner +
+                    " won, but PGN indicates " + pgnResult);
+        }
+    }
+
+    private void reportNonCheckmateEnding(String pgnResult) {
+        if ("draw".equals(pgnResult)) {
+            System.out.println("Game ended in a draw according to PGN.");
+        } else if ("white".equals(pgnResult)) {
+            System.out.println("Game ended with white winning according to PGN (not by checkmate).");
+            System.out.println("This could indicate a resignation or a time forfeit.");
+        } else if ("black".equals(pgnResult)) {
+            System.out.println("Game ended with black winning according to PGN (not by checkmate).");
+            System.out.println("This could indicate a resignation or a time forfeit.");
+        } else {
+            System.out.println("Game ended without checkmate. PGN Result: " + pgnResult);
+        }
+    }
 
     private boolean handleKingSideCastling(Color color) {
         King king = (color == white) ? whiteKing : blackKing;
         int row = (color == white) ? 0 : 7;
 
-        // Check if castling is legal
         if (!canCastleKingSide(king, row)) {
+            System.out.println("Error: Invalid king-side castling");
             return false;
         }
 
@@ -221,7 +258,6 @@ public class GameSimulator {
         board[row][5] = rook;
         rook.setPosition(new Position((char)('h' - 2), row + 1));
 
-        System.out.println("Executed king-side castling for " + color);
         return true;
     }
 
@@ -229,8 +265,8 @@ public class GameSimulator {
         King king = (color == white) ? whiteKing : blackKing;
         int row = (color == white) ? 0 : 7;
 
-        // Check if castling is legal
         if (!canCastleQueenSide(king, row)) {
+            System.out.println("Error: Invalid queen-side castling");
             return false;
         }
 
@@ -245,426 +281,247 @@ public class GameSimulator {
         board[row][3] = rook;
         rook.setPosition(new Position((char)('a' + 3), row + 1));
 
-        System.out.println("Executed queen-side castling for " + color);
         return true;
     }
 
     private boolean canCastleKingSide(King king, int row) {
         // Check if king and rook are in their initial positions
-        if (!(board[row][4] instanceof King) ||
-                !(board[row][7] instanceof Rook)) {
+        if (!(board[row][4] instanceof King) || !(board[row][7] instanceof Rook)) {
             return false;
         }
 
-        // Check if squares between king and rook are empty
+        // Check if squares between are empty
         if (board[row][5] != null || board[row][6] != null) {
             return false;
         }
 
-        // Check if king is not in check
-        if (isInCheck(king)) {
+        // Check if king is not in check and would not pass through check
+        if (ChessUtils.isInCheck(board, king)) {
             return false;
         }
 
-        // Check if king would pass through check
-        // This is a simplified check - a full implementation would be more complex
         Position tempPos = new Position((char)('e' + 1), row + 1);
         king.setPosition(tempPos);
-        boolean passesCheck = isInCheck(king);
+        boolean passesCheck = ChessUtils.isInCheck(board, king);
         king.setPosition(new Position('e', row + 1));
 
-        if (passesCheck) {
-            return false;
-        }
-
-        return true;
+        return !passesCheck;
     }
 
     private boolean canCastleQueenSide(King king, int row) {
         // Check if king and rook are in their initial positions
-        if (!(board[row][4] instanceof King) ||
-                !(board[row][0] instanceof Rook)) {
+        if (!(board[row][4] instanceof King) || !(board[row][0] instanceof Rook)) {
             return false;
         }
 
-        // Check if squares between king and rook are empty
+        // Check if squares between are empty
         if (board[row][1] != null || board[row][2] != null || board[row][3] != null) {
             return false;
         }
 
-        // Check if king is not in check
-        if (isInCheck(king)) {
+        // Check if king is not in check and would not pass through check
+        if (ChessUtils.isInCheck(board, king)) {
             return false;
         }
 
-        // Check if king would pass through check
-        // This is a simplified check - a full implementation would be more complex
         Position tempPos = new Position((char)('e' - 1), row + 1);
         king.setPosition(tempPos);
-        boolean passesCheck = isInCheck(king);
+        boolean passesCheck = ChessUtils.isInCheck(board, king);
         king.setPosition(new Position('e', row + 1));
 
-        if (passesCheck) {
-            return false;
-        }
-
-        return true;
+        return !passesCheck;
     }
 
     private Piece identifyPiece(Move move) {
-        System.out.println("---data about move---");
-        System.out.println(move.getAction());
-        System.out.println("---------------------");
-
         char pieceType = move.getPiece();
         Color color = move.getColor();
         Position targetPos = move.getNewPosition();
 
-
-
-        // Special case for knight moves with file disambiguation (like "Nhf6")
-        if (pieceType == 'N' && move.isCharAmb() && !move.isDigitAmb()) {
-            char fileHint = move.getFile();
-            targetPos = move.getNewPosition();
-
-            // Convert file character to array index (a=0, b=1, etc.)
-            int fileIndex = fileHint - 'a';
-
-            // Look for knights on the specified file
-            for (int rankIndex = 0; rankIndex < 8; rankIndex++) {
-                if (fileIndex >= 0 && fileIndex < 8 &&
-                        board[rankIndex][fileIndex] instanceof Knight &&
-                        board[rankIndex][fileIndex].getColor() == color &&
-                        board[rankIndex][fileIndex].canGo(targetPos) &&
-                        isPathClear(board[rankIndex][fileIndex], targetPos)) {
-
-                    return board[rankIndex][fileIndex];
-                }
-            }
+        // Handle special cases for different piece types
+        if (pieceType == 'N') {
+            Piece knight = findKnight(move, color, targetPos);
+            if (knight != null) return knight;
         }
 
-        // Special case for knight moves with rank disambiguation (like "N6d7")
-        if (pieceType == 'N' && !move.isCharAmb() && move.isDigitAmb()) {
-            int rankHint = move.getRank();
-            targetPos = move.getNewPosition();
-
-            // Convert rank number to array index (1→0, 2→1, etc.)
-            int rankIndex = rankHint - 1;
-
-            // Look for knights on the specified rank
-            for (int fileIndex = 0; fileIndex < 8; fileIndex++) {
-                if (rankIndex >= 0 && rankIndex < 8 &&
-                        board[rankIndex][fileIndex] instanceof Knight &&
-                        board[rankIndex][fileIndex].getColor() == color &&
-                        board[rankIndex][fileIndex].canGo(targetPos) &&
-                        isPathClear(board[rankIndex][fileIndex], targetPos)) {
-
-                    return board[rankIndex][fileIndex];
-                }
-            }
+        // Special case for pawns
+        if (pieceType == 'P') {
+            Piece pawn = findPawn(move, color, targetPos);
+            if (pawn != null) return pawn;
         }
 
-        // Special case for knight moves with both file and rank disambiguation (like "Nf6d7")
-        if (pieceType == 'N' && move.isCharAmb() && move.isDigitAmb()) {
-            char fileHint = move.getFile();
-            int rankHint = move.getRank();
-            targetPos = move.getNewPosition();
+        // General case for all pieces
+        return findGeneralPiece(move, pieceType, color, targetPos);
+    }
 
-            // Convert to array indices
-            int fileIndex = fileHint - 'a';
-            int rankIndex = rankHint - 1;
-
-            // Check the specific square
-            if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8 &&
-                    board[rankIndex][fileIndex] instanceof Knight &&
-                    board[rankIndex][fileIndex].getColor() == color &&
-                    board[rankIndex][fileIndex].canGo(targetPos) &&
-                    isPathClear(board[rankIndex][fileIndex], targetPos)) {
-
-                return board[rankIndex][fileIndex];
-            }
-        }
-
-        // Special case for pawns moving forward
-        if (pieceType == 'P' && !move.isCapture()) {
-            // For standard pawn moves, the file of the move is the file of the pawn
-            char targetFile = targetPos.getFile();
-            int targetRank = targetPos.getRank();
-            int direction = (color == Color.white) ? -1 : 1;
-
-            // Check one square behind (or two for initial double move)
-            for (int offset = 1; offset <= 2; offset++) {
-                int sourceRank = targetRank + (direction * offset);
-
-                // Check if source rank is valid
-                if (sourceRank < 1 || sourceRank > 8) continue;
-
-                // Get board indices
-                int x = sourceRank - 1;
-                int y = targetFile - 'a';
-
-                // Make sure we're in bounds
-                if (x < 0 || x >= 8 || y < 0 || y >= 8) continue;
-
-                // Check if there's a pawn at this position
-                if (board[x][y] instanceof Pawn &&
-                        board[x][y].getColor() == color) {
-
-                    // For double moves, check if it's from starting position
-                    if (offset == 2) {
-                        boolean isInitialRank = (color == Color.white && sourceRank == 2) ||
-                                (color == Color.black && sourceRank == 7);
-
-                        // Check if the square in between is empty
-                        int middleRank = targetRank + direction;
-                        int middleX = middleRank - 1;
-
-                        if (isInitialRank && board[middleX][y] == null) {
-                            return board[x][y];
-                        }
-                    } else {
-                        // For single moves, just return the pawn
-                        return board[x][y];
-                    }
-                }
-            }
-        }
-
-        // Pawn captures require special handling
-        if (pieceType == 'P' && move.isCapture()) {
-            char targetFile = targetPos.getFile();
-            int targetRank = targetPos.getRank();
-            int direction = (color == Color.white) ? -1 : 1;
-
-            // For pawn captures, source file is explicitly provided
-            // No need to check both possible capture origins
-            char sourceFile = move.getFile();  // This is the file from which the pawn is capturing
-            int sourceRank = targetRank + direction;  // Pawn must be one rank away in the appropriate direction
-
-            // Convert to array indices
-            int x = sourceRank - 1;
-            int y = sourceFile - 'a';
-
-            // Make sure we're in bounds
-            if (x >= 0 && x < 8 && y >= 0 && y < 8) {
-                // Check if there's a pawn at this position
-                if (board[x][y] instanceof Pawn && board[x][y].getColor() == color) {
-                    return board[x][y];
-                }
-            }
-
-            // If we can't find the pawn where expected, fall back to checking adjacent files
-            // (This is a safety mechanism, but with correct PGN notation, we shouldn't need it)
-            sourceRank = targetRank + direction;
-            for (int fileOffset = -1; fileOffset <= 1; fileOffset += 2) {
-                char potentialFile = (char)(targetFile + fileOffset);
-
-                // Skip if outside board
-                if (potentialFile < 'a' || potentialFile > 'h') continue;
-
-                int potentialX = sourceRank - 1;
-                int potentialY = potentialFile - 'a';
-
-                if (potentialX >= 0 && potentialX < 8 && potentialY >= 0 && potentialY < 8 &&
-                        board[potentialX][potentialY] instanceof Pawn &&
-                        board[potentialX][potentialY].getColor() == color) {
-                    return board[potentialX][potentialY];
-                }
-            }
-        }
-
-        // For other pieces, use the existing logic
-        List<Piece> candidates = new ArrayList<>();
-
-        // Find all pieces of the given type and color that could potentially move to the target
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = board[i][j];
-                if (piece == null || piece.getColor() != color) {
-                    continue;
-                }
-
-                boolean isRightType = false;
-                switch (pieceType) {
-                    case 'P': isRightType = piece instanceof Pawn; break;
-                    case 'R': isRightType = piece instanceof Rook; break;
-                    case 'N': isRightType = piece instanceof Knight; break;
-                    case 'B': isRightType = piece instanceof Bishop; break;
-                    case 'Q': isRightType = piece instanceof Queen; break;
-                    case 'K': isRightType = piece instanceof King; break;
-                }
-
-                if (isRightType && piece.canGo(targetPos) && isPathClear(piece, targetPos)) {
-                    candidates.add(piece);
-                }
-            }
-        }
-
-        System.out.println(candidates.size());
-
-        if (candidates.isEmpty()) {
-            return null;
-        }
-
-        if (candidates.size() == 1) {
-            return candidates.get(0);
-        }
-
-        // Handle disambiguation
+    private Piece findKnight(Move move, Color color, Position targetPos) {
         char fileHint = move.getFile();
         int rankHint = move.getRank();
 
-        for (Piece candidate : candidates) {
-            Position pos = candidate.getPosition();
-
-            if (fileHint != '\u0000' && pos.getFile() != fileHint) {
-                continue;
+        // Handle file disambiguation
+        if (move.isCharAmb() && !move.isDigitAmb()) {
+            for (int rankIndex = 0; rankIndex < 8; rankIndex++) {
+                int fileIndex = fileHint - 'a';
+                if (isValidKnightAt(rankIndex, fileIndex, color, targetPos)) {
+                    return board[rankIndex][fileIndex];
+                }
             }
+        }
 
-            if (rankHint != 0 && pos.getRank() != rankHint) {
-                continue;
+        // Handle rank disambiguation
+        if (!move.isCharAmb() && move.isDigitAmb()) {
+            int rankIndex = rankHint - 1;
+            for (int fileIndex = 0; fileIndex < 8; fileIndex++) {
+                if (isValidKnightAt(rankIndex, fileIndex, color, targetPos)) {
+                    return board[rankIndex][fileIndex];
+                }
             }
+        }
 
-            return candidate;
+        // Handle both file and rank disambiguation
+        if (move.isCharAmb() && move.isDigitAmb()) {
+            int fileIndex = fileHint - 'a';
+            int rankIndex = rankHint - 1;
+            if (isValidKnightAt(rankIndex, fileIndex, color, targetPos)) {
+                return board[rankIndex][fileIndex];
+            }
         }
 
         return null;
     }
 
-    private boolean isPathClear(Piece piece, Position targetPos) {
-        // Knights can jump, so no path checking needed
-        if (piece instanceof Knight) {
-            return true;
-        }
-
-        int startX = piece.getPosition().getX();
-        int startY = piece.getPosition().getY();
-        int endX = targetPos.getX();
-        int endY = targetPos.getY();
-
-        // Determine direction
-        int dx = Integer.compare(endX - startX, 0);
-        int dy = Integer.compare(endY - startY, 0);
-
-        int x = startX + dx;
-        int y = startY + dy;
-
-        // Check all squares between start and end (excluding start and end)
-        while (x != endX || y != endY) {
-            if (board[x][y] != null) {
-                return false; // Path is blocked
-            }
-
-            x += dx;
-            y += dy;
-        }
-
-        return true;
+    private boolean isValidKnightAt(int rankIndex, int fileIndex, Color color, Position targetPos) {
+        return rankIndex >= 0 && rankIndex < 8 && fileIndex >= 0 && fileIndex < 8 &&
+                board[rankIndex][fileIndex] instanceof Knight &&
+                board[rankIndex][fileIndex].getColor() == color &&
+                board[rankIndex][fileIndex].canGo(targetPos) &&
+                ChessUtils.isPathClear(board, board[rankIndex][fileIndex], targetPos);
     }
 
-    private boolean isInCheck(King king) {
-        Position kingPos = king.getPosition();
-        Color kingColor = king.getColor();
+    private Piece findPawn(Move move, Color color, Position targetPos) {
+        if (move.isCapture()) {
+            return findPawnForCapture(move, color, targetPos);
+        } else {
+            return findPawnForNormalMove(move, color, targetPos);
+        }
+    }
 
-        // Check if any opponent piece can attack the king
+    private Piece findPawnForNormalMove(Move move, Color color, Position targetPos) {
+        char targetFile = targetPos.getFile();
+        int targetRank = targetPos.getRank();
+        int direction = (color == Color.white) ? -1 : 1;
+
+        // Check one or two squares behind
+        for (int offset = 1; offset <= 2; offset++) {
+            int sourceRank = targetRank + (direction * offset);
+            if (sourceRank < 1 || sourceRank > 8) continue;
+
+            int x = sourceRank - 1;
+            int y = targetFile - 'a';
+            if (x < 0 || x >= 8 || y < 0 || y >= 8) continue;
+
+            // Check if there's a pawn at this position
+            if (board[x][y] instanceof Pawn && board[x][y].getColor() == color) {
+                // For double moves, verify initial position and clear path
+                if (offset == 2) {
+                    boolean isInitialRank = (color == Color.white && sourceRank == 2) ||
+                            (color == Color.black && sourceRank == 7);
+                    int middleRank = targetRank + direction;
+                    int middleX = middleRank - 1;
+
+                    if (isInitialRank && board[middleX][y] == null) {
+                        return board[x][y];
+                    }
+                } else {
+                    // For single moves, just return the pawn
+                    return board[x][y];
+                }
+            }
+        }
+        return null;
+    }
+
+    private Piece findPawnForCapture(Move move, Color color, Position targetPos) {
+        char targetFile = targetPos.getFile();
+        int targetRank = targetPos.getRank();
+        int direction = (color == Color.white) ? -1 : 1;
+        char sourceFile = move.getFile();
+        int sourceRank = targetRank + direction;
+
+        // Try the explicit source file first
+        int x = sourceRank - 1;
+        int y = sourceFile - 'a';
+        if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+            if (board[x][y] instanceof Pawn && board[x][y].getColor() == color) {
+                return board[x][y];
+            }
+        }
+
+        // Fallback: check adjacent files
+        for (int fileOffset : new int[] {-1, 1}) {
+            char potentialFile = (char)(targetFile + fileOffset);
+            if (potentialFile < 'a' || potentialFile > 'h') continue;
+
+            int potentialX = sourceRank - 1;
+            int potentialY = potentialFile - 'a';
+            if (potentialX < 0 || potentialX >= 8 || potentialY < 0 || potentialY >= 8) continue;
+
+            if (board[potentialX][potentialY] instanceof Pawn &&
+                    board[potentialX][potentialY].getColor() == color) {
+                return board[potentialX][potentialY];
+            }
+        }
+        return null;
+    }
+
+    private Piece findGeneralPiece(Move move, char pieceType, Color color, Position targetPos) {
+        List<Piece> candidates = new ArrayList<>();
+
+        // Find all pieces of the given type that could move to the target
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
-                if (piece != null && piece.getColor() != kingColor) {
-                    if (piece.canGo(kingPos) && isPathClear(piece, kingPos)) {
-                        return true;
-                    }
+                if (piece == null || piece.getColor() != color) continue;
+
+                if (isPieceOfType(piece, pieceType) &&
+                        piece.canGo(targetPos) &&
+                        ChessUtils.isPathClear(board, piece, targetPos)) {
+                    candidates.add(piece);
                 }
             }
         }
 
-        return false;
+        if (candidates.isEmpty()) return null;
+        if (candidates.size() == 1) return candidates.get(0);
+
+        // Handle disambiguation
+        return disambiguatePieces(candidates, move.getFile(), move.getRank());
     }
 
-    private boolean isCheckmate(King king) {
-        // If not in check, not checkmate
-        if (!isInCheck(king)) {
-            return false;
-        }
-
-        // Check if king can move to any adjacent square
-        int kingX = king.getPosition().getX();
-        int kingY = king.getPosition().getY();
-
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                if (dx == 0 && dy == 0) continue;
-
-                int newX = kingX + dx;
-                int newY = kingY + dy;
-
-                // Check if new position is on the board
-                if (newX < 0 || newX >= 8 || newY < 0 || newY >= 8) {
-                    continue;
-                }
-
-                // Check if square is empty or has opponent's piece
-                if (board[newX][newY] == null || board[newX][newY].getColor() != king.getColor()) {
-                    // Try moving king there
-                    Piece savedPiece = board[newX][newY];
-                    board[newX][newY] = king;
-                    board[kingX][kingY] = null;
-
-                    Position oldPos = king.getPosition();
-                    king.setPosition(new Position((char)('a' + newY), newX + 1));
-
-                    boolean stillInCheck = isInCheck(king);
-
-                    // Restore board
-                    king.setPosition(oldPos);
-                    board[kingX][kingY] = king;
-                    board[newX][newY] = savedPiece;
-
-                    if (!stillInCheck) {
-                        return false; // King can escape
-                    }
-                }
-            }
-        }
-
-        // Check if any friendly piece can block or capture the checking piece
-        // This is a simplified implementation - a full implementation would check all possible moves
-        // For now, we'll just assume it's checkmate if the king can't move
-
-        return true;
-    }
-
-    private Piece getPiece(char pieceType, Position position, Color color) {
+    private boolean isPieceOfType(Piece piece, char pieceType) {
         return switch (pieceType) {
-            case 'Q' -> new Queen(position, color);
-            case 'B' -> new Bishop(position, color);
-            case 'R' -> new Rook(position, color);
-            case 'N' -> new Knight(position, color);
-            case 'K' -> new King(position, color);
-            default -> null;
+            case 'P' -> piece instanceof Pawn;
+            case 'R' -> piece instanceof Rook;
+            case 'N' -> piece instanceof Knight;
+            case 'B' -> piece instanceof Bishop;
+            case 'Q' -> piece instanceof Queen;
+            case 'K' -> piece instanceof King;
+            default -> false;
         };
     }
 
-    private void movePiece(Piece piece, Piece[][] board, Position newPosition) {
-        // Update board
-        int oldX = piece.getPosition().getX();
-        int oldY = piece.getPosition().getY();
-        int newX = newPosition.getX();
-        int newY = newPosition.getY();
+    private Piece disambiguatePieces(List<Piece> candidates, char fileHint, int rankHint) {
+        for (Piece candidate : candidates) {
+            Position pos = candidate.getPosition();
 
-        board[newX][newY] = piece;
-        board[oldX][oldY] = null;
+            // Skip if file hint is provided and doesn't match
+            if (fileHint != '\u0000' && pos.getFile() != fileHint) continue;
 
-        // Update piece's internal position
-        piece.setPosition(newPosition);
+            // Skip if rank hint is provided and doesn't match
+            if (rankHint != 0 && pos.getRank() != rankHint) continue;
 
-        System.out.println("Moved " + piece.getClass().getSimpleName() +
-                " from " + (char)('a' + oldY) + (oldX + 1) +
-                " to " + newPosition);
-    }
-
-    // Checkmate helper method - simplified version from your original code
-    private boolean checkmate(Piece currentPiece) {
-        return true; // Simplified implementation
+            // This candidate matches all disambiguation criteria
+            return candidate;
+        }
+        return null;
     }
 }

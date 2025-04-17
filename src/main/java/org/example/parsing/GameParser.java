@@ -8,10 +8,20 @@ import java.io.IOException;
 import java.util.*;
 import java.util.regex.*;
 
+/**
+ * This class handles the parsing of PGN (Portable Game Notation) files for chess games.
+ * It extracts game metadata, moves, annotations, and results from PGN formatted text.
+ */
 public class GameParser {
+    // Regular expression pattern for validating PGN tags
     private final Pattern VALID_TAG_PATTERN = Pattern.compile("^\\[([A-Za-z]+)\\s+\"(.*)\"\\]$");
 
-
+    /**
+     * Reads a line containing a PGN tag and extracts the key-value pair.
+     *
+     * @param line The line to parse containing a PGN tag
+     * @return A string array with the tag name at index 0 and tag value at index 1, or null if invalid
+     */
     private String[] readLine(String line){
         if(!VALID_TAG_PATTERN.matcher(line.trim()).matches()){
             return null;
@@ -43,6 +53,7 @@ public class GameParser {
         return new String[]{key.toString(), value.toString()};
     }
 
+    // Regular expression for white moves in PGN notation
     private static final String whiteMoveRegex =
             "\\d+\\.\\s*" +
                     "(?:" +
@@ -58,7 +69,7 @@ public class GameParser {
                     ")" +
                     "\\s*(?:\\$\\d{1,3})?\\s*(?:\\{[^}]*\\})?";
 
-
+    // Regular expression for black moves in PGN notation
     private static final String blackMoveRegex =
             "(?:\\d+\\.\\.\\.)?\\s*" +
                     "(?:" +
@@ -73,10 +84,16 @@ public class GameParser {
                     ")" +
                     "\\s*(?:\\$\\d{1,3})?\\s*(?:\\{[^}]*\\})?";
 
-
+    // Regular expression for game result
     private final String resultRegex = "^(1-0|0-1|1/2-1/2|\\*)\\s*";
 
-
+    /**
+     * Extracts chess moves from a string of PGN movetext and creates a Record object.
+     *
+     * @param text The PGN movetext to parse
+     * @param tags The metadata tags associated with the game
+     * @return A Record object containing the parsed game, or null if parsing fails
+     */
     private Record getMovesFromString(String text, Map<String,String> tags) {
         Map<Integer, Move[]> result = new HashMap<>();
 
@@ -98,7 +115,6 @@ public class GameParser {
             if(whiteMatcher.lookingAt()){
                 // create white object Move and add to the result
                 String white = text.substring(0,whiteMatcher.end());
-//                System.out.println(white);
 
                 int i = 0;
                 currentRound = 0;
@@ -106,7 +122,6 @@ public class GameParser {
                     currentRound = currentRound*10 + Character.getNumericValue(white.charAt(i));
                     i++;
                 }
-//                System.out.println(currentRound);
 
                 if(currentRound != previousLevel +1){
                     System.out.println("Missing round, last level identified was "+previousLevel);
@@ -121,15 +136,6 @@ public class GameParser {
                 white = white.substring(i+1);
 
                 whiteMove = generateMove(white,Color.white);
-
-//                System.out.println(whiteMove.toString());
-//
-//
-//                System.out.println(whiteMove.getAction());
-//                System.out.println(whiteMove.getAnnotation());
-//                System.out.println(whiteMove.getComment());
-//                System.out.println("-----------------");
-
 
                 result.get(currentRound)[0] = whiteMove;
 
@@ -160,7 +166,6 @@ public class GameParser {
 
             if(blackMatcher.lookingAt()){
                 String black = text.substring(0,blackMatcher.end()).trim();
-//                System.out.println(black);
 
                 // if we have comment in white, we must have digit...
                 if(whiteMove.getComment() == null && Character.isDigit(black.charAt(0))){
@@ -185,16 +190,7 @@ public class GameParser {
 
                 blackMove = generateMove(black,Color.black);
 
-//                System.out.println(blackMove.toString());
-
                 result.get(currentRound)[1] = blackMove;
-
-//                System.out.println(blackMove.getAction());
-//                System.out.println(blackMove.getAnnotation());
-//                System.out.println(blackMove.getComment());
-//
-//                System.out.println("--------------end of a round--------------");
-
 
                 text = text.substring(blackMatcher.end()).trim();
 
@@ -229,6 +225,14 @@ public class GameParser {
         return null;
     }
 
+    /**
+     * Generates a Move object from a PGN move string.
+     * Parses the action, comments, and annotations from the move text.
+     *
+     * @param element The PGN move string to parse
+     * @param color The color of the player making the move
+     * @return A Move object representing the parsed move
+     */
     private static Move generateMove(String element, Color color){
         String comment = null;
         String annotation = null;
@@ -259,6 +263,12 @@ public class GameParser {
         return move;
     }
 
+    /**
+     * Parses a PGN file and extracts all games into Record objects.
+     *
+     * @param filePath Path to the PGN file to parse
+     * @return A list of Record objects, one for each game in the file
+     */
     public List<Record> parsingMoves(String filePath){
         List<Record> records = new ArrayList<>();
 
@@ -307,23 +317,4 @@ public class GameParser {
 
         return records;
     }
-
-//    public static void main(String[] args) {
-//        GameParser g = new GameParser();
-////        String filePath = "C:\\autocode-demo\\ChessGame\\src\\main\\java\\org\\example\\Tbilisi2015.pgn";
-//        String badOne = "src/main/java/org/example/badOne.pgn";
-//        List<Record> records = g.parsingMoves(badOne);
-//
-//        records.forEach((element)->{
-//            if(element == null){
-//                System.out.println("fail, something missing");
-//            }
-//            else {
-//                System.out.println(element.getTags());
-//            }
-//        });
-//
-//
-//        System.out.println(records.size());
-//    }
 }

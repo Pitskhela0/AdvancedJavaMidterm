@@ -79,7 +79,7 @@ public class Move {
                 isCharAmb = true;
             }
             // promotion
-            else if(action.contains("=")) {
+            if(action.contains("=")) {
                 promotion = true;
                 promoted = action.charAt(action.indexOf("=")+1);
 

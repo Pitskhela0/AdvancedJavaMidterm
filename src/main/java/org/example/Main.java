@@ -12,18 +12,19 @@ public class Main {
 
     // core of the program
     public static void main(String[] args) {
-        String filePath = "C:\\autocode-demo\\ChessGame\\src\\main\\java\\org\\example\\badOne.pgn";
-//        String filePath = "C:\\autocode-demo\\ChessGame\\src\\main\\java\\org\\example\\Tbilisi2015.pgn";
+//        String filePath = "C:\\autocode-demo\\ChessGame\\src\\main\\java\\org\\example\\badOne.pgn";
+        String filePath = "src/test/java/real_PGN_examples/badOne.pgn";
         GameParser gameParser = new GameParser();
 
         // return all games, parsed into objects, each game in Record.
         List<Record> records = gameParser.parsingMoves(filePath);
 
         for(Record record : records){
-            System.out.println(record.getMoves() == null);
+//            System.out.println(record.getMoves() == null);
             GameSimulator gameSimulator = new GameSimulator(record);
             gameSimulator.runGame();
         }
+
         System.out.println(countMoves);
     }
 }

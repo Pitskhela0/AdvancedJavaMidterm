@@ -29,7 +29,6 @@ public class Bishop extends Piece {
 
         int xDiff = Math.abs(currentX - newX);
         int yDiff = Math.abs(currentY - newY);
-
         return xDiff == yDiff; // Bishops move diagonally
     }
 

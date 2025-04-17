@@ -75,11 +75,17 @@ public abstract class Piece {
             int deltaX = (kingX != startX) ? (kingX - startX) / Math.abs(kingX - startX) : 0;
             int deltaY = (kingY != startY) ? (kingY - startY) / Math.abs(kingY - startY) : 0;
 
-            // Check each square between piece and king
+            // Start from position next to piece
             int x = startX + deltaX;
             int y = startY + deltaY;
 
+            // Check each square between piece and king
             while (x != kingX || y != kingY) {
+                // Make sure we're still in bounds
+                if (x < 0 || x >= 8 || y < 0 || y >= 8) {
+                    return false; // Out of bounds
+                }
+
                 if (board[x][y] != null) {
                     return false; // Path is blocked
                 }
@@ -158,7 +164,7 @@ public abstract class Piece {
                         !piece.equals(this)) {
 
                     // Check if this other piece can also move to the target position
-                    if (piece.canGo(newPosition) && isPathClear(board, piece.getPosition(), newPosition)) {
+                    if (piece.canGo(newPosition) && isPathClear(board, piece, newPosition)) {
                         ambiguousPieces++;
 
                         // Check if the pieces are on different files
@@ -199,7 +205,7 @@ public abstract class Piece {
                         piece.getColor() == this.getColor() &&
                         !piece.equals(this) &&
                         piece.canGo(newPosition) &&
-                        isPathClear(board, piece.getPosition(), newPosition)) {
+                        isPathClear(board, piece, newPosition)) {
 
                     candidates.add(piece);
                 }
@@ -246,27 +252,36 @@ public abstract class Piece {
     /**
      * Helper method to check if the path is clear for a piece to move
      */
-    protected boolean isPathClear(Piece[][] board, Position from, Position to) {
+    private boolean isPathClear(Piece[][] board,Piece piece, Position targetPos) {
         // Knights can jump, so no path checking needed
-        if (this instanceof Knight) {
+        if (piece instanceof Knight) {
             return true;
         }
 
-        int startX = from.getX();
-        int startY = from.getY();
-        int endX = to.getX();
-        int endY = to.getY();
+        int startX = piece.getPosition().getX();
+        int startY = piece.getPosition().getY();
+        int endX = targetPos.getX();
+        int endY = targetPos.getY();
+
 
         // Determine direction
         int dx = Integer.compare(endX - startX, 0);
         int dy = Integer.compare(endY - startY, 0);
 
+
         int x = startX + dx;
         int y = startY + dy;
 
+
         // Check all squares between start and end (excluding start and end)
         while (x != endX || y != endY) {
+
+            if (x < 0 || x >= 8 || y < 0 || y >= 8) {
+                return false; // Out of bounds
+            }
+
             if (board[x][y] != null) {
+
                 return false; // Path is blocked
             }
 
