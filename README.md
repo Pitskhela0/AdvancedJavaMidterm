@@ -42,7 +42,7 @@ The application is useful for validating chess database files, detecting errors 
 1. Clone the repository:
    ```
    git clone https://github.com/Pitskhela0/AdvancedJavaMidterm.git
-   cd chess-pgn-validator
+   cd ChessGame
    ```
 
 2. Build the project:
