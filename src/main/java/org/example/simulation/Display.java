@@ -39,18 +39,15 @@ public class Display {
 
         char symbol = ' ';
 
-        if (piece instanceof Pawn) {
-            symbol = 'P';
-        } else if (piece instanceof Rook) {
-            symbol = 'R';
-        } else if (piece instanceof Knight) {
-            symbol = 'N';
-        } else if (piece instanceof Bishop) {
-            symbol = 'B';
-        } else if (piece instanceof Queen) {
-            symbol = 'Q';
-        } else if (piece instanceof King) {
-            symbol = 'K';
+        switch (piece) {
+            case Pawn pawn -> symbol = 'P';
+            case Rook rook -> symbol = 'R';
+            case Knight knight -> symbol = 'N';
+            case Bishop bishop -> symbol = 'B';
+            case Queen queen -> symbol = 'Q';
+            case King king -> symbol = 'K';
+            default -> {
+            }
         }
 
         return piece.getColor() == Color.white ? symbol : Character.toLowerCase(symbol);

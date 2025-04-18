@@ -259,8 +259,7 @@ public class GameParser {
                 action = element.trim();
             }
         }
-        Move move = new Move(action, comment, annotation, color);
-        return move;
+        return new Move(action, comment, annotation, color);
     }
 
     /**

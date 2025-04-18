@@ -1,7 +1,5 @@
 package org.example.parsing;
 
-import org.example.parsing.Move;
-
 import java.util.*;
 
 public class Record {

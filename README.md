@@ -41,7 +41,7 @@ The application is useful for validating chess database files, detecting errors 
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/chess-pgn-validator.git
+   git clone https://github.com/Pitskhela0/AdvancedJavaMidterm.git
    cd chess-pgn-validator
    ```
 
@@ -55,7 +55,7 @@ The application is useful for validating chess database files, detecting errors 
 Run the application with a PGN file as an argument:
 
 ```
-java -jar target/chess-pgn-validator-1.0.jar path/to/your/file.pgn
+java -jar out/artifacts/ChessGame_jar/ChessGame.jar path/to/your/file.pgn
 ```
 
 #### Example Output

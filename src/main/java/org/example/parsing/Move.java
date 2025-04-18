@@ -3,15 +3,13 @@ package org.example.parsing;
 import org.example.simulation.pieces.attributes.Color;
 import org.example.simulation.pieces.attributes.Position;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.Map.entry;
 
 public class Move {
     private char piece;
-    private Color color;
+    private final Color color;
     private final String action;
     private Position newPosition;
     private char file;
@@ -36,8 +34,7 @@ public class Move {
         return queenSideCastling;
     }
 
-    // todo: fill with annotations texts
-    Map<Integer, String> annotations = Map.ofEntries(
+    Map<Integer, String> annotations = Map.<Integer, String>ofEntries(
             entry(0, "null annotation"),
             entry(1, "good move (traditional \"!\")"),
             entry(2, "poor move or mistake (traditional \"?\")"),
@@ -181,7 +178,6 @@ public class Move {
     );
 
     public Move(String action, String comment, String annotation, Color color){
-        // todo: identify annotation and display its mapping
         this.action = action;
         this.comment = comment;
         this.annotation = annotation;
@@ -196,14 +192,20 @@ public class Move {
                 annotationKey = annotationKey*10 + Character.getNumericValue(annotation.charAt(i));
                 i++;
             }
-            System.out.println(action+ " "+ annotations.get(annotationKey));
+            if(annotations.containsKey(annotationKey)){
+                System.out.println(action+ " "+ annotations.get(annotationKey));
+            }
+            else {
+                System.out.println("Invalid annotation, value not defined");
+            }
+
         }
 
 
         // checkmate
         if(action.contains("#"))
             checkmate = true;
-            // check
+        // check
         else if(action.contains("+"))
             check = true;
 
