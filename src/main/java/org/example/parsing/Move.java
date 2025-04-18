@@ -3,6 +3,12 @@ package org.example.parsing;
 import org.example.simulation.pieces.attributes.Color;
 import org.example.simulation.pieces.attributes.Position;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Map.entry;
+
 public class Move {
     private char piece;
     private Color color;
@@ -30,13 +36,169 @@ public class Move {
         return queenSideCastling;
     }
 
+    // todo: fill with annotations texts
+    Map<Integer, String> annotations = Map.ofEntries(
+            entry(0, "null annotation"),
+            entry(1, "good move (traditional \"!\")"),
+            entry(2, "poor move or mistake (traditional \"?\")"),
+            entry(3, "very good or brilliant move (traditional \"!!\")"),
+            entry(4, "very poor move or blunder (traditional \"??\")"),
+            entry(5, "speculative or interesting move (traditional \"!?\")"),
+            entry(6, "questionable or dubious move (traditional \"?!\")"),
+            entry(7, "forced move (all others lose quickly) or only move"),
+            entry(8, "singular move (no reasonable alternatives)"),
+            entry(9, "worst move"),
+            entry(10, "drawish position or even"),
+            entry(11, "equal chances, quiet position"),
+            entry(12, "equal chances, active position"),
+            entry(13, "unclear position"),
+            entry(14, "White has a slight advantage"),
+            entry(15, "Black has a slight advantage"),
+            entry(16, "White has a moderate advantage"),
+            entry(17, "Black has a moderate advantage"),
+            entry(18, "White has a decisive advantage"),
+            entry(19, "Black has a decisive advantage"),
+            entry(20, "White has a crushing advantage (Black should resign)"),
+            entry(21, "Black has a crushing advantage (White should resign)"),
+            entry(22, "White is in zugzwang"),
+            entry(23, "Black is in zugzwang"),
+            entry(24, "White has a slight space advantage"),
+            entry(25, "Black has a slight space advantage"),
+            entry(26, "White has a moderate space advantage"),
+            entry(27, "Black has a moderate space advantage"),
+            entry(28, "White has a decisive space advantage"),
+            entry(29, "Black has a decisive space advantage"),
+            entry(30, "White has a slight time (development) advantage"),
+            entry(31, "Black has a slight time (development) advantage"),
+            entry(32, "White has a moderate time (development) advantage"),
+            entry(33, "Black has a moderate time (development) advantage"),
+            entry(34, "White has a decisive time (development) advantage"),
+            entry(35, "Black has a decisive time (development) advantage"),
+            entry(36, "White has the initiative"),
+            entry(37, "Black has the initiative"),
+            entry(38, "White has a lasting initiative"),
+            entry(39, "Black has a lasting initiative"),
+            entry(40, "White has the attack"),
+            entry(41, "Black has the attack"),
+            entry(42, "White has insufficient compensation for material deficit"),
+            entry(43, "Black has insufficient compensation for material deficit"),
+            entry(44, "White has sufficient compensation for material deficit"),
+            entry(45, "Black has sufficient compensation for material deficit"),
+            entry(46, "White has more than adequate compensation for material deficit"),
+            entry(47, "Black has more than adequate compensation for material deficit"),
+            entry(48, "White has a slight center control advantage"),
+            entry(49, "Black has a slight center control advantage"),
+            entry(50, "White has a moderate center control advantage"),
+            entry(51, "Black has a moderate center control advantage"),
+            entry(52, "White has a decisive center control advantage"),
+            entry(53, "Black has a decisive center control advantage"),
+            entry(54, "White has a slight kingside control advantage"),
+            entry(55, "Black has a slight kingside control advantage"),
+            entry(56, "White has a moderate kingside control advantage"),
+            entry(57, "Black has a moderate kingside control advantage"),
+            entry(58, "White has a decisive kingside control advantage"),
+            entry(59, "Black has a decisive kingside control advantage"),
+            entry(60, "White has a slight queenside control advantage"),
+            entry(61, "Black has a slight queenside control advantage"),
+            entry(62, "White has a moderate queenside control advantage"),
+            entry(63, "Black has a moderate queenside control advantage"),
+            entry(64, "White has a decisive queenside control advantage"),
+            entry(65, "Black has a decisive queenside control advantage"),
+            entry(66, "White has a vulnerable first rank"),
+            entry(67, "Black has a vulnerable first rank"),
+            entry(68, "White has a well protected first rank"),
+            entry(69, "Black has a well protected first rank"),
+            entry(70, "White has a poorly protected king"),
+            entry(71, "Black has a poorly protected king"),
+            entry(72, "White has a well protected king"),
+            entry(73, "Black has a well protected king"),
+            entry(74, "White has a poorly placed king"),
+            entry(75, "Black has a poorly placed king"),
+            entry(76, "White has a well placed king"),
+            entry(77, "Black has a well placed king"),
+            entry(78, "White has a very weak pawn structure"),
+            entry(79, "Black has a very weak pawn structure"),
+            entry(80, "White has a moderately weak pawn structure"),
+            entry(81, "Black has a moderately weak pawn structure"),
+            entry(82, "White has a moderately strong pawn structure"),
+            entry(83, "Black has a moderately strong pawn structure"),
+            entry(84, "White has a very strong pawn structure"),
+            entry(85, "Black has a very strong pawn structure"),
+            entry(86, "White has poor knight placement"),
+            entry(87, "Black has poor knight placement"),
+            entry(88, "White has good knight placement"),
+            entry(89, "Black has good knight placement"),
+            entry(90, "White has poor bishop placement"),
+            entry(91, "Black has poor bishop placement"),
+            entry(92, "White has good bishop placement"),
+            entry(93, "Black has good bishop placement"),
+            entry(94, "White has poor rook placement"),
+            entry(95, "Black has poor rook placement"),
+            entry(96, "White has good rook placement"),
+            entry(97, "Black has good rook placement"),
+            entry(98, "White has poor queen placement"),
+            entry(99, "Black has poor queen placement"),
+            entry(100, "White has good queen placement"),
+            entry(101, "Black has good queen placement"),
+            entry(102, "White has poor piece coordination"),
+            entry(103, "Black has poor piece coordination"),
+            entry(104, "White has good piece coordination"),
+            entry(105, "Black has good piece coordination"),
+            entry(106, "White has played the opening very poorly"),
+            entry(107, "Black has played the opening very poorly"),
+            entry(108, "White has played the opening poorly"),
+            entry(109, "Black has played the opening poorly"),
+            entry(110, "White has played the opening well"),
+            entry(111, "Black has played the opening well"),
+            entry(112, "White has played the opening very well"),
+            entry(113, "Black has played the opening very well"),
+            entry(114, "White has played the middlegame very poorly"),
+            entry(115, "Black has played the middlegame very poorly"),
+            entry(116, "White has played the middlegame poorly"),
+            entry(117, "Black has played the middlegame poorly"),
+            entry(118, "White has played the middlegame well"),
+            entry(119, "Black has played the middlegame well"),
+            entry(120, "White has played the middlegame very well"),
+            entry(121, "Black has played the middlegame very well"),
+            entry(122, "White has played the ending very poorly"),
+            entry(123, "Black has played the ending very poorly"),
+            entry(124, "White has played the ending poorly"),
+            entry(125, "Black has played the ending poorly"),
+            entry(126, "White has played the ending well"),
+            entry(127, "Black has played the ending well"),
+            entry(128, "White has played the ending very well"),
+            entry(129, "Black has played the ending very well"),
+            entry(130, "White has slight counterplay"),
+            entry(131, "Black has slight counterplay"),
+            entry(132, "White has moderate counterplay"),
+            entry(133, "Black has moderate counterplay"),
+            entry(134, "White has decisive counterplay"),
+            entry(135, "Black has decisive counterplay"),
+            entry(136, "White has moderate time control pressure"),
+            entry(137, "Black has moderate time control pressure"),
+            entry(138, "White has severe time control pressure / zeitnot"),
+            entry(139, "Black has severe time control pressure / zeitnot")
+    );
+
     public Move(String action, String comment, String annotation, Color color){
+        // todo: identify annotation and display its mapping
         this.action = action;
         this.comment = comment;
         this.annotation = annotation;
         this.color = color;
         this.isCharAmb = false; // Explicitly initialize to false
         this.isDigitAmb = false; // Explicitly initialize to false
+
+        if(annotation != null && annotation.contains("$")){
+            int annotationKey = 0;
+            int i = annotation.indexOf("$")+1;
+            while (i < annotation.length() && Character.isDigit(annotation.charAt(i))){
+                annotationKey = annotationKey*10 + Character.getNumericValue(annotation.charAt(i));
+                i++;
+            }
+            System.out.println(action+ " "+ annotations.get(annotationKey));
+        }
+
 
         // checkmate
         if(action.contains("#"))
@@ -106,10 +268,8 @@ public class Move {
 
         this.piece = action.charAt(0);
 
-        /**
-         * Update the Move constructor to better handle knight moves with disambiguation
-         */
-// Inside the Move class, update the section that handles knights and other pieces:
+
+        // Inside the Move class, update the section that handles knights and other pieces:
 
         // Non-pawn, non-king pieces (like knights)
         if (Character.isUpperCase(firstChar) && firstChar != 'K') {
